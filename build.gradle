@@ -19,10 +19,43 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
+    // Web MVC (컨트롤러, REST API)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Validation (요청 DTO @Valid, @NotNull 등 검증용)
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // JPA (도메인 Entity ↔ RDB 매핑용)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // H2 인메모리 DB (로컬 개발/테스트용 DB)
+    runtimeOnly 'com.h2database:h2'
+
+    // Redis (분산 락 + 캐시용)
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Kafka (포인트 이벤트 발행/구독용)
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    // Lombok (보일러플레이트 코드 줄이기: @Getter, @Builder 등)
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // @ConfigurationProperties 자동 메타데이터 생성 (yml 바인딩 편의)
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    // 테스트 통합 세트 (JUnit, Mockito, Spring Test, JSON, 등)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Kafka 테스트 유틸 (필요시 - 안 쓰면 빼도 됨)
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    // JUnit 플랫폼 런처 (IDE/Gradle에서 JUnit 실행용)
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+
 
 tasks.named('test') {
     useJUnitPlatform()
