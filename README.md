@@ -1,145 +1,71 @@
-# 포인트 도메인 DDD 설계 요약
+# Point Wallet Service (DDD + Redis + Kafka)
 
-## 1. Aggregate: PointWallet (회원 포인트 계좌)
+## 📌 프로젝트 배경
+현재 회사에서 **선불 서비스**를 운영 중이며, 신규로 **적립 포인트** 기능이 필요하여 요구사항을 구현해보고자 합니다.
 
-### 역할
-- 회원의 모든 포인트 상태(state)를 관리하는 Aggregate Root
-- 적립/사용/취소/만료 등 **현재 상태 변화**를 책임짐
+포인트 시스템은 **대용량 트래픽**, **포인트 사용 시 동시성 문제**, **정산/원장 이력 관리**, **만료 처리** 등 높은 수준의 안정성과 확장성을 요구합니다.
 
-### 필드
-- `memberId`
-- `earnedPoints: List<EarnedPoint>`
-
-### 메서드
-- `earn(amount, sourceType, expireAt)`
-- `cancelEarn(earnedPointId)`
-- `use(amount, orderNo)`
-- `cancelUse(usageId, cancelAmount)`
+따라서, 이번 프로젝트는 이러한 요구사항을 대비하여 **도메인 주도 설계(DDD)** 를 기반으로 포인트 기능을 구현하고,  
+대용량 환경에서도 안정적으로 동작할 수 있도록 **Redis(분산 락 + 캐싱)**, **Kafka(이벤트 기반 비동기 처리)** 를 적용한 **실전형 아키텍처 구축**을 목표로 합니다.
 
 ---
 
-## 2. Entity: EarnedPoint (적립 포인트 단위)
+# 🚀 기술 스택
 
-### 역할
-- 적립 포인트 하나의 상태를 나타내는 엔티티
-- 남은 금액, 만료 여부, 사용 가능 여부 등을 관리
+## ✔ Backend
+- **Java 21**
+- **Spring Boot 3.x**
+- Spring Data JPA
+- Spring Web
+- Spring Validation
 
-### 필드
-- `earnedPointId`
-- `amount`
-- `remainingAmount`
-- `expireAt`
-- `sourceType`
-- `status`
+## ✔ Database
+- **H2 Database (개발/테스트 환경)**
+    - 인메모리 DB로 빠르고 편리함
+    - Redis와 함께 사용 가능 (Redis는 캐시/락 역할)
+- 이후 실서비스 고려 시 PostgreSQL/MySQL 확장 가능
 
-### 메서드
-- `use(amount)`
-- `canCancel()`
+## ✔ Messaging / Cache
+- **Redis**
+    - 회원 단위 분산 락(Redis Lock)
+    - 포인트 잔액/만료 요약 캐싱
+    - 이벤트 스냅샷 캐싱
 
----
+- **Apache Kafka**
+    - 포인트 적립/사용/사용취소/만료 이벤트 발행
+    - 이벤트 기반 정산/원장 서비스 구축 가능
+    - 알림 서비스 및 배치 시스템 확장 가능
 
-## 3. Entity: PointUsage (주문 단위 사용 정보)
+## ✔ Build / Test
+- Gradle 8.x
+- JUnit 5
 
-### 역할
-- 특정 주문에서 포인트를 사용한 내역을 표현하는 엔티티  
-- “현재 기준” 사용 상세(remaining usage detail)를 보유  
-- 발생했던 이벤트들을 히스토리로 보존할 수 있음 (optional)
-
-### 필드
-- `usageId`
-- `orderNo`
-- `usedAmount`  (현재 순사용 금액)
-- `usedDetails: List<PointUsageDetail>`  (현재 기준 EarnedPoint별 사용 분배)
-- `events: List<PointUsageEvent>`  (과거 사용/취소 이벤트 기록)
-
-### 메서드
-- `applyUse(amount, details)`
-- `applyCancel(cancelAmount, details)`
 
 ---
-
-## 4. Value Object: PointUsageDetail (사용 상세)
-
-### 역할
-- 특정 사용/취소에서 EarnedPoint별 금액 분배를 나타내는 값 객체
-- “불변”으로 다루고, 변경이 필요하면 전체 리스트를 새로 구성해 교체
-
-### 필드
-- `earnedPointId`
-- `amount`
-
----
-
-## 5. Value Object: PointUsageEvent (사용 이벤트 기록)
-
-### 역할
-- 사용/사용취소가 발생할 때마다 “당시 발생한 사실”을 기록하는 VO
-- 상태 변경과 별개로 과거 이력에만 의존 → 불변 값에 가깝다
-
-### 필드
-- `eventType` (USE, USE_CANCEL)
-- `amount` (이 이벤트에서 변한 금액)
-- `details: List<PointUsageDetail>` (이 이벤트 당시 EarnedPoint 분배)
-- `createdAt`
-
----
-
-## 6. 설계 의도 요약
-
-### ✔ 상태(state)와 히스토리(history)의 분리
-- **PointWallet + EarnedPoint** → 현재 상태 유지  
-- **PointUsageEvent** → 과거 사실을 쌓는 히스토리
-
-### ✔ Aggregate 간 책임 분리
-- PointWallet은 “회원 포인트의 정합성 유지”만 담당  
-- PointUsage는 “주문 단위 사용 정보 관리”  
-- PointUsageEvent는 “발생한 사건의 스냅샷” (불변)
-
-### ✔ 단순하지만 확장 가능한 구조
-- 과제 범위에서는 사용/취소 로직 구현이 단순  
-- 실무 확장 시 Ledger/Audit 테이블로 자연스럽게 발전 가능
-
----
-
-## 7. 전체 구조 요약도
+# 🔗 전체 아키텍처
 
 ```
-[Agg: PointWallet]
-    └── [Entity: EarnedPoint]
-
-[Entity: PointUsage]
-    ├── [Value: PointUsageDetail] (현재 기준)
-    └── [Value: PointUsageEvent] (이력)
-         └── [Value: PointUsageDetail] (이벤트 당시 기준)
+[Controller]
+     ↓
+[Application Service]
+     ↓ (Redis Distributed Lock)
+[Domain Layer – PointWallet Aggregate]
+     ↓
+[RDB(H2) 저장]
+     ↓
+[Kafka Producer] → point-events
+     ↓
+-----------------------------------------------------
+   LedgerConsumer → 원장 DB 저장
+   ExpireConsumer → 만료 처리 자동화
+   NotificationConsumer → 문자/푸시 알림
+-----------------------------------------------------
+[Redis Cache] → balance, snapshot 저장
 ```
 
 ---
 
-## 8. 적용 시나리오 예시
+# 🎯 프로젝트 목적 요약
 
-### ① 사용
-- EarnedPoint에서 우선순위에 따라 금액 차감
-- PointUsage.usedDetails 재계산
-- PointUsageEvent(eventType=USE) 기록 추가
-
-### ② 사용취소
-- EarnedPoint.remainingAmount 복구 (또는 만료 시 신규 Earn 생성)
-- PointUsage.usedDetails 재계산
-- PointUsageEvent(eventType=USE_CANCEL) 기록 추가
-
----
-
-## 9. 이 구조의 장점
-
-- 사용/부분취소/취소 모두 표현 가능
-- 최초 사용 분배 & 취소 분배 모두 복원 가능
-- 현재 상태 & 과거 이력 모두 명확히 분리
-- 도메인 규칙이 Aggregate 내부에 잘 모임
-- 추적/감사/정산 기능 확장에도 유리
-
----
-
-## 10. 참고
-
-본 설계는 의도적으로 단순화되어 있지만,  
-동일 구조를 실무 포인트/정산 시스템에도 쉽게 확장할 수 있는 형태임.
+> “실제 서비스 수준의 정확성 & 확장성을 갖춘 포인트 지갑 시스템을 DDD 기반으로 설계하고,  
+> Redis(락/캐싱) + Kafka(이벤트 기반) 아키텍처를 접목하여 안정적인 대규모 트래픽 처리 환경을 구축하는 것”.  
