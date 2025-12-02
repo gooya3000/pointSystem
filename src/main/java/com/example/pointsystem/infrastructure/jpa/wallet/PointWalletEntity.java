@@ -1,10 +1,7 @@
 package com.example.pointsystem.infrastructure.jpa.wallet;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +42,6 @@ public class PointWalletEntity {
      */
     public void addEarnedPoint(EarnedPointEntity earnedPoint) {
         this.earnedPoints.add(earnedPoint);
-        earnedPoint.setWallet(this);
+        earnedPoint.setPointWallet(this);
     }
 }

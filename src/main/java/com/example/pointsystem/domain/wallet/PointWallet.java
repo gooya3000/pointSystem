@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 public class PointWallet {
 
-    private Long memberId;
+    private final Long memberId;
     private final List<EarnedPoint> earnedPoints;
 
 }

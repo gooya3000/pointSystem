@@ -54,11 +54,11 @@ public class PointUsageEntity {
      * @param usedAmount 총 사용 금액
      * @param createdAt 사용 발생 시각
      */
-    public PointUsageEntity(Long memberId, String orderNo, int usedAmount, LocalDateTime createdAt, List<PointUsageDetailEntity> details) {
+    public PointUsageEntity(Long memberId, String orderNo, int usedAmount, LocalDateTime createdAt) {
         this.memberId = memberId;
         this.orderNo = orderNo;
         this.usedAmount = usedAmount;
         this.createdAt = createdAt;
-        this.details = details;
+        this.details = new ArrayList<>();
     }
 }
