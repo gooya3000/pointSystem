@@ -3,14 +3,12 @@ package com.example.pointsystem.infrastructure.jpa.wallet;
 import com.example.pointsystem.domain.wallet.EarnedPointSourceType;
 import com.example.pointsystem.domain.wallet.EarnedPointStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
 @Table(name = "earned_point")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,6 +21,7 @@ public class EarnedPointEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
+    @Setter
     private PointWalletEntity pointWallet;
 
     @Column(nullable = false)
@@ -68,7 +67,15 @@ public class EarnedPointEntity {
      * @param status 초기 상태
      * @param createdAt 적립 발생 시각
      */
-    public EarnedPointEntity(PointWalletEntity pointWallet, int amount, int remainingAmount, LocalDateTime expireAt, EarnedPointSourceType sourceType, EarnedPointStatus status, LocalDateTime createdAt) {
+    public EarnedPointEntity(
+            PointWalletEntity pointWallet,
+            int amount,
+            int remainingAmount,
+            LocalDateTime expireAt,
+            EarnedPointSourceType sourceType,
+            EarnedPointStatus status,
+            LocalDateTime createdAt
+    ) {
         this.pointWallet = pointWallet;
         this.amount = amount;
         this.remainingAmount = remainingAmount;

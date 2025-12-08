@@ -32,6 +32,10 @@ public class PointUsage {
     }
 
     public static PointUsage createUse(Long memberId, String orderNo, int amount, List<PointUsageDetail> details) {
+        int sum = details.stream().mapToInt(PointUsageDetail::getAmount).sum();
+        if (sum != amount) {
+            throw new IllegalArgumentException("Mismatch between usage amount and detail totals.");
+        }
         return new PointUsage(null, memberId, orderNo, amount, details, LocalDateTime.now());
     }
 
