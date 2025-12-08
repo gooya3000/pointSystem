@@ -31,6 +31,10 @@ public class PointUsage {
         this.events = new ArrayList<>();
     }
 
+    public static PointUsage createUse(Long memberId, String orderNo, int amount, List<PointUsageDetail> details) {
+        return new PointUsage(null, memberId, orderNo, amount, details, LocalDateTime.now());
+    }
+
     public void addEvent(PointUsageEvent event) {
         this.events.add(event);
     }

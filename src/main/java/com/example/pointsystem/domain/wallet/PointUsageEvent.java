@@ -13,4 +13,7 @@ public class PointUsageEvent {
     private final List<PointUsageDetail> details;
     private final LocalDateTime createdAt;
 
+    public static PointUsageEvent useCreated(int amount, List<PointUsageDetail> details) {
+        return new PointUsageEvent(PointUsageEventType.USE, amount, details, LocalDateTime.now());
+    }
 }

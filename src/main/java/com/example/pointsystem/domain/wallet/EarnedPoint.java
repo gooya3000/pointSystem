@@ -43,13 +43,9 @@ public class EarnedPoint {
         if (this.status != EarnedPointStatus.ACTIVE) {
             throw new IllegalStateException("Not usable");
         }
-        // 사용하려는 금액이 남은 금액보다 크면 사용할 수 없음
-        if (amount > remainingAmount) {
-            throw new IllegalArgumentException("Not enough remaining");
-        }
 
         // 이 적립건에서 실제로 사용할 수 있는 금액 = 요청 vs 남은금액 중 작은 것
-        int used = Math.min(requestAmount, remainingAmount);
+        int used = Math.min(amount, remainingAmount);
 
         // 남은 금액 = 남은 금액 - 사용 금액
         remainingAmount -= used;
@@ -83,4 +79,7 @@ public class EarnedPoint {
         }
     }
 
+    public boolean isActive() {
+        return status == EarnedPointStatus.ACTIVE;
+    }
 }
