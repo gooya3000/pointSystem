@@ -23,9 +23,10 @@ public record PointUsageResponse(
                 usage.getUsageId(),
                 usage.getMemberId(),
                 usage.getOrderNo(),
-                usage.getAmount(),
+                usage.getUsedAmount(),
                 usage.getCreatedAt(),
                 detailResponses
         );
+    }
 
 }
