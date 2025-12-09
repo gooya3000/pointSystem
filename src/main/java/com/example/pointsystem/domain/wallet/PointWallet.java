@@ -43,12 +43,6 @@ public class PointWallet {
         return earnedPoint;
     }
 
-    private int calculateCurrentBalance() {
-        return earnedPoints.stream()
-                .mapToInt(EarnedPoint::getRemainingAmount)
-                .sum();
-    }
-
     // 2) 적립 취소
     public EarnedPoint cancelEarn(long earnedPointId) {
         throw new UnsupportedOperationException("PointWallet.cancelEarn 아직 구현 안 됨");
@@ -109,6 +103,13 @@ public class PointWallet {
     // 지갑 생성
     public static PointWallet createWallet(Long memberId) {
         return new PointWallet(memberId, new ArrayList<>());
+    }
+
+    // 잔액 계산
+    public int calculateCurrentBalance() {
+        return earnedPoints.stream()
+                .mapToInt(EarnedPoint::getRemainingAmount)
+                .sum();
     }
 
 }

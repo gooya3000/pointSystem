@@ -12,5 +12,17 @@ public enum EarnedPointSourceType {
     NORMAL,
     ADMIN,
     EVENT,
-    COMPENSATION
+    COMPENSATION;
+
+    public static EarnedPointSourceType fromNullable(String value) {
+        if (value == null || value.isBlank()) {
+            return NORMAL; // 기본값
+        }
+        try {
+            return EarnedPointSourceType.valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            // 잘못된 값이면 예외 던져서 400으로 처리하게
+            throw new IllegalArgumentException("Invalid sourceType: " + value);
+        }
+    }
 }

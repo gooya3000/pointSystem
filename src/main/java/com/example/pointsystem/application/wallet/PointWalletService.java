@@ -18,18 +18,7 @@ public class PointWalletService {
     private final PointPolicyService pointPolicyService;
 
     @Transactional
-    public PointUsage usePoint(Long memberId, int amount, String orderNo) {
-        PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
-                .orElseGet(() -> PointWallet.createWallet(memberId));
-
-        PointUsage usage = wallet.use(amount, orderNo); // 도메인 호출
-
-        pointWalletRepository.save(wallet);
-        return pointUsageRepository.save(usage);
-    }
-
-    @Transactional
-    public void earnPoint(Long memberId, int amount, LocalDateTime expireAt, EarnedPointSourceType sourceType) {
+    public void earnPoint(Long memberId, int amount, LocalDateTime expireAt, String sourceType) {
 
         // 1회 적립 한도, 최대 보유 한도 정책 가져오기
         PointPolicy policy = pointPolicyService.getCurrentPolicy();
@@ -37,7 +26,7 @@ public class PointWalletService {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
                 .orElseGet(() -> PointWallet.createWallet(memberId));
 
-        wallet.earn(amount, expireAt, sourceType, policy);
+        wallet.earn(amount, expireAt, EarnedPointSourceType.fromNullable(sourceType), policy);
 
         pointWalletRepository.save(wallet);
     }
@@ -50,5 +39,18 @@ public class PointWalletService {
         return pointWalletRepository.findByMemberId(memberId)
                 .orElseGet(() -> PointWallet.createWallet(memberId));
     }
+
+    @Transactional
+    public PointUsage usePoint(Long memberId, int amount, String orderNo) {
+        PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
+                .orElseGet(() -> PointWallet.createWallet(memberId));
+
+        PointUsage usage = wallet.use(amount, orderNo); // 도메인 호출
+
+        pointWalletRepository.save(wallet);
+        return pointUsageRepository.save(usage);
+    }
+
+
 
 }
