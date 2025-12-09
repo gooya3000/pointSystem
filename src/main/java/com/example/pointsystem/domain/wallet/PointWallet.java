@@ -1,5 +1,6 @@
 package com.example.pointsystem.domain.wallet;
 
+import com.example.pointsystem.domain.policy.PointPolicy;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -17,8 +18,35 @@ public class PointWallet {
     private final List<EarnedPoint> earnedPoints;
 
     // 1) 적립
-    public EarnedPoint earn(int amount, LocalDateTime expireAt, EarnedPointSourceType sourceType) {
-        throw new UnsupportedOperationException("PointWallet.earn 아직 구현 안 됨");
+    public EarnedPoint earn(int amount, LocalDateTime expireAt, EarnedPointSourceType sourceType, PointPolicy policy) {
+        // 1) 1회 최대 적립 검증
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero.");
+        }
+        if (amount > policy.getMaxEarnPerTxn()) {
+            throw new IllegalArgumentException(
+                    "Amount exceeds maximum points per earning transaction.");
+        }
+
+        // 2) 최대 보유 포인트 검증
+        int currentBalance = calculateCurrentBalance();
+        if (currentBalance + amount > policy.getMaxBalance()) {
+            throw new IllegalArgumentException(
+                    "Amount exceeds maximum allowed point balance.");
+        }
+
+        // 3) EarnedPoint 생성 (여기서 만료일 기본 365일 처리)
+        EarnedPoint earnedPoint = EarnedPoint.createPoint(null, amount, amount, expireAt, sourceType, EarnedPointStatus.ACTIVE, LocalDateTime.now());
+
+        this.earnedPoints.add(earnedPoint);
+
+        return earnedPoint;
+    }
+
+    private int calculateCurrentBalance() {
+        return earnedPoints.stream()
+                .mapToInt(EarnedPoint::getRemainingAmount)
+                .sum();
     }
 
     // 2) 적립 취소
@@ -33,7 +61,10 @@ public class PointWallet {
 
         for (EarnedPoint ep : earnedPoints.stream()
                 .filter(EarnedPoint::isActive)
-                .sorted(comparing(EarnedPoint::getExpireAt))
+                .sorted(
+                        comparing((EarnedPoint ep) -> ep.getSourceType() == EarnedPointSourceType.ADMIN ? 0 : 1)
+                                .thenComparing(EarnedPoint::getExpireAt)
+                )
                 .toList()) {
 
             if (remaining == 0) break;
@@ -73,6 +104,11 @@ public class PointWallet {
     // 6) 만료 처리
     public List<EarnedPoint> expire(LocalDateTime now) {
         throw new UnsupportedOperationException("PointWallet.expire 아직 구현 안 됨");
+    }
+
+    // 지갑 생성
+    public static PointWallet createWallet(Long memberId) {
+        return new PointWallet(memberId, new ArrayList<>());
     }
 
 }

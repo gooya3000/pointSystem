@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RequiredArgsConstructor
 @AllArgsConstructor
@@ -18,6 +19,15 @@ public class EarnedPoint {
     private final EarnedPointSourceType sourceType;
     private EarnedPointStatus status;
     private final LocalDateTime createdAt;
+
+    public static EarnedPoint createPoint(Long earnedPointId, int amount, int remainingAmount, LocalDateTime expireAt, EarnedPointSourceType sourceType, EarnedPointStatus status, LocalDateTime createdAt) {
+
+        if (expireAt == null) {
+            expireAt =  LocalDateTime.now().plusDays(365); // 기본 만료일은 365일
+        }
+
+        return new EarnedPoint(earnedPointId, amount, remainingAmount, expireAt, sourceType, status, createdAt);
+    }
 
     /**
      * 적립 취소
