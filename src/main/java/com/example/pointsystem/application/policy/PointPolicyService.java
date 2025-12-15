@@ -6,6 +6,9 @@ import com.example.pointsystem.infrastructure.jpa.policy.PointPolicyJpaRepositor
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * PointPolicy(Aggregate Root) 에 대한 비즈니스 서비스입니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class PointPolicyService {
@@ -14,6 +17,10 @@ public class PointPolicyService {
 
     private final PointPolicyJpaRepository jpaRepository;
 
+    /**
+     * 포인트 정책을 조회합니다.
+     * @return PointPolicy
+     */
     public PointPolicy getCurrentPolicy() {
         PointPolicyEntity entity = jpaRepository.findById(DEFAULT_POLICY_ID)
                 .orElseThrow(() -> new IllegalStateException("Point policy not configured."));

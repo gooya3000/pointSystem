@@ -17,7 +17,14 @@ public class PointWallet {
     private final Long memberId;
     private final List<EarnedPoint> earnedPoints;
 
-    // 1) 적립
+    /**
+     * 지갑에 포인트를 적립합니다.
+     * @param amount 금액
+     * @param expireAt 만료일시
+     * @param sourceType 적립 포인트 발생 유형
+     * @param policy 포인트 정책
+     * @return EarnedPoint
+     */
     public EarnedPoint earn(int amount, LocalDateTime expireAt, EarnedPointSourceType sourceType, PointPolicy policy) {
         // 1) 1회 최대 적립 검증
         if (amount <= 0) {
@@ -43,12 +50,17 @@ public class PointWallet {
         return earnedPoint;
     }
 
-    // 2) 적립 취소
+    // 적립 취소
     public EarnedPoint cancelEarn(long earnedPointId) {
         throw new UnsupportedOperationException("PointWallet.cancelEarn 아직 구현 안 됨");
     }
 
-    // 3) 사용
+    /**
+     * 적립한 포인트를 사용합니다.
+     * @param amount 금액
+     * @param orderNo 주문번호
+     * @return PointUsage
+     */
     public PointUsage use(int amount, String orderNo) {
         int remaining = amount;
         List<PointUsageDetail> details = new ArrayList<>();
@@ -85,17 +97,17 @@ public class PointWallet {
         return usage;
     }
 
-    // 4) 부분 취소
+    // 부분 취소
     public PointUsage cancelUse(long usageId, int cancelAmount) {
         throw new UnsupportedOperationException("PointWallet.cancelUse 아직 구현 안 됨");
     }
 
-    // 5) 전체 취소
+    // 전체 취소
     public PointUsage cancelUseAll(long usageId) {
         throw new UnsupportedOperationException("PointWallet.cancelUseAll 아직 구현 안 됨");
     }
 
-    // 6) 만료 처리
+    // 만료 처리
     public List<EarnedPoint> expire(LocalDateTime now) {
         throw new UnsupportedOperationException("PointWallet.expire 아직 구현 안 됨");
     }
