@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 /**
- * PointWallet(Aggregate Root) 에 대한 비즈니스 서비스입니다.
+ * 회원 포인트 지갑의 적립, 사용, 조회 기능을 제공하는 응용 서비스입니다.
  */
 @Service
 @RequiredArgsConstructor

@@ -10,6 +10,9 @@ import java.util.List;
 
 import static java.util.Comparator.comparing;
 
+/**
+ * 회원별 포인트 적립과 사용을 집계하는 지갑 도메인 모델입니다.
+ */
 @RequiredArgsConstructor
 @Getter
 public class PointWallet {

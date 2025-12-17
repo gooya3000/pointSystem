@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * 포인트 정책 설정을 저장하는 JPA 엔티티입니다.
+ */
 @Entity
 @Table(name = "point_policy")
 @Getter

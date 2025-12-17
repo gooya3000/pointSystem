@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 적립된 포인트의 상태와 금액 흐름을 관리하는 도메인 모델입니다.
+ */
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Getter

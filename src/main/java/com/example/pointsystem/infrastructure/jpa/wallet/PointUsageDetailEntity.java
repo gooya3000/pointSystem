@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 포인트 사용 상세 정보를 저장하는 JPA 엔티티입니다.
+ */
 @Entity
 @Data
 @Table(name = "point_usage_detail")

@@ -5,6 +5,9 @@ import com.example.pointsystem.domain.wallet.PointUsage;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 포인트 사용 결과를 반환하기 위한 응답 DTO입니다.
+ */
 public record PointUsageResponse(
         Long usageId,
         Long memberId,
