@@ -5,6 +5,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
+/**
+ * 포인트 적립 요청 본문을 표현합니다.
+ */
 public record EarnPointRequest(
         @Min(1)
         int amount,

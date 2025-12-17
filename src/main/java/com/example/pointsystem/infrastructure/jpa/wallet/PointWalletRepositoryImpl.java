@@ -7,6 +7,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * 포인트 지갑 도메인 저장소의 JPA 구현체입니다.
+ */
 @Repository
 @RequiredArgsConstructor
 public class PointWalletRepositoryImpl implements PointWalletRepository {

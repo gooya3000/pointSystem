@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
- * PointPolicy(Aggregate Root) 에 대한 비즈니스 서비스입니다.
+ * 포인트 적립 및 보유 한도 정책을 조회하는 응용 서비스입니다.
  */
 @Service
 @RequiredArgsConstructor

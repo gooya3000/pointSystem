@@ -7,6 +7,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * 적립 포인트 정보를 데이터베이스에 저장하기 위한 JPA 엔티티입니다.
+ */
 @Entity
 @Getter
 @Table(name = "earned_point")

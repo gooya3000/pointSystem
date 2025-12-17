@@ -6,6 +6,9 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 회원의 포인트 지갑을 표현하는 JPA 엔티티입니다.
+ */
 @Entity
 @Getter
 @Table(name = "point_wallet")

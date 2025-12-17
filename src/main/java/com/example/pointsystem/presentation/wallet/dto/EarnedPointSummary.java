@@ -4,6 +4,9 @@ import com.example.pointsystem.domain.wallet.EarnedPoint;
 
 import java.time.LocalDateTime;
 
+/**
+ * 적립 포인트 내역을 조회용으로 요약한 응답 모델입니다.
+ */
 public record EarnedPointSummary(
         Long earnedPointId,
         int amount,

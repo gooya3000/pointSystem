@@ -8,6 +8,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 포인트 사용 이력을 저장하는 JPA 엔티티입니다.
+ */
 @Entity
 @Data
 @Table(name = "point_usage")

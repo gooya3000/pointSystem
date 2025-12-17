@@ -5,6 +5,9 @@ import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 포인트 사용과 관련된 도메인 이벤트 정보를 표현합니다.
+ */
 @RequiredArgsConstructor
 public class PointUsageEvent {
 

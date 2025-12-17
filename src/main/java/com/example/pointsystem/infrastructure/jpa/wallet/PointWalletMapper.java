@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 포인트 지갑 도메인과 JPA 엔티티 간의 변환을 수행합니다.
+ */
 @Component
 public class PointWalletMapper {
 

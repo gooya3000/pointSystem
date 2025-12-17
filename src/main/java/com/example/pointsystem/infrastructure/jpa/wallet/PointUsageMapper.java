@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 포인트 사용 도메인 객체와 JPA 엔티티 간 변환을 담당합니다.
+ */
 @Component
 public class PointUsageMapper {
 

@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * 포인트 사용 기록과 상세 사용 내역을 보관하는 도메인 모델입니다.
+ */
 @RequiredArgsConstructor
 @Getter
 public class PointUsage {

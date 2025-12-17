@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * 포인트 지갑과 관련된 REST API 엔드포인트를 제공합니다.
+ */
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/point")
