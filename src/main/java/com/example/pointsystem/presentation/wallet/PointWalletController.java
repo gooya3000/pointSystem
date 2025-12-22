@@ -83,5 +83,45 @@ public class PointWalletController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * 적립 취소
+     * POST /api/point/{memberId}/earn/{earnedPointId}/cancel
+     */
+    @PostMapping("/{memberId}/earn/{earnedPointId}/cancel")
+    public ResponseEntity<Void> cancelEarn(
+            @PathVariable Long memberId,
+            @PathVariable Long earnedPointId
+    ) {
+        pointWalletService.cancelEarn(memberId, earnedPointId);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 포인트 사용 부분 취소
+     * POST /api/point/{memberId}/use/{usageId}/cancel
+     */
+    @PostMapping("/{memberId}/use/{usageId}/cancel")
+    public ResponseEntity<PointUsageResponse> cancelUse(
+            @PathVariable Long memberId,
+            @PathVariable Long usageId,
+            @Valid @RequestBody CancelUseRequest request
+    ) {
+        PointUsage usage = pointWalletService.cancelUse(memberId, usageId, request.cancelAmount());
+        return ResponseEntity.ok(PointUsageResponse.from(usage));
+    }
+
+    /**
+     * 포인트 사용 전체 취소
+     * POST /api/point/{memberId}/use/{usageId}/cancel/all
+     */
+    @PostMapping("/{memberId}/use/{usageId}/cancel/all")
+    public ResponseEntity<PointUsageResponse> cancelUseAll(
+            @PathVariable Long memberId,
+            @PathVariable Long usageId
+    ) {
+        PointUsage usage = pointWalletService.cancelUseAll(memberId, usageId);
+        return ResponseEntity.ok(PointUsageResponse.from(usage));
+    }
+
 
 }
