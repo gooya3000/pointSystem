@@ -66,13 +66,15 @@ public class PointWalletMapper {
     private EarnedPointEntity toEntity(EarnedPoint ep, PointWalletEntity walletEntity) {
 
         return new EarnedPointEntity(
+                ep.getEarnedPointId(),
                 walletEntity,
                 ep.getAmount(),
                 ep.getRemainingAmount(),
                 ep.getExpireAt(),
                 ep.getSourceType(),
                 ep.getStatus(),
-                ep.getCreatedAt()
+                ep.getCreatedAt(),
+                null
         );
     }
 

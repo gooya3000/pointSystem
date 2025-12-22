@@ -70,6 +70,52 @@ public class PointWalletService {
         return pointUsageRepository.save(usage);
     }
 
+    /**
+     * 적립을 취소합니다.
+     */
+    @Transactional
+    public void cancelEarn(Long memberId, Long earnedPointId) {
+        PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Wallet not found for member " + memberId));
+
+        wallet.cancelEarn(earnedPointId);
+        pointWalletRepository.save(wallet);
+    }
+
+    /**
+     * 포인트 사용을 부분 취소합니다.
+     */
+    @Transactional
+    public PointUsage cancelUse(Long memberId, Long usageId, int cancelAmount) {
+        PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Wallet not found for member " + memberId));
+
+        PointUsage usage = pointUsageRepository.findById(usageId)
+                .orElseThrow(() -> new IllegalArgumentException("Usage not found: " + usageId));
+
+        PointUsage canceled = wallet.cancelUse(usage, cancelAmount);
+
+        pointWalletRepository.save(wallet);
+        return pointUsageRepository.save(canceled);
+    }
+
+    /**
+     * 포인트 사용을 전액 취소합니다.
+     */
+    @Transactional
+    public PointUsage cancelUseAll(Long memberId, Long usageId) {
+        PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Wallet not found for member " + memberId));
+
+        PointUsage usage = pointUsageRepository.findById(usageId)
+                .orElseThrow(() -> new IllegalArgumentException("Usage not found: " + usageId));
+
+        PointUsage canceled = wallet.cancelUseAll(usage);
+
+        pointWalletRepository.save(wallet);
+        return pointUsageRepository.save(canceled);
+    }
+
 
 
 }

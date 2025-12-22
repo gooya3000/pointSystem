@@ -19,4 +19,12 @@ public class PointUsageEvent {
     public static PointUsageEvent useCreated(int amount, List<PointUsageDetail> details) {
         return new PointUsageEvent(PointUsageEventType.USE, amount, details, LocalDateTime.now());
     }
+
+    public static PointUsageEvent useCanceled(int amount, List<PointUsageDetail> details) {
+        return new PointUsageEvent(PointUsageEventType.USE_CANCEL, amount, details, LocalDateTime.now());
+    }
+
+    public static PointUsageEvent usePartiallyCanceled(int amount, List<PointUsageDetail> details) {
+        return new PointUsageEvent(PointUsageEventType.USE_PARTIAL, amount, details, LocalDateTime.now());
+    }
 }
