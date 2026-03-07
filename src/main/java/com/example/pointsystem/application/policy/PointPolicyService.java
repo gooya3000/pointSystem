@@ -23,7 +23,7 @@ public class PointPolicyService {
      */
     public PointPolicy getCurrentPolicy() {
         PointPolicyEntity entity = jpaRepository.findById(DEFAULT_POLICY_ID)
-                .orElseThrow(() -> new IllegalStateException("Point policy not configured."));
+                .orElseThrow(() -> new IllegalStateException("포인트 정책이 설정되어 있지 않습니다."));
 
         return new PointPolicy(
                 entity.getMaxEarnPerTxn(),

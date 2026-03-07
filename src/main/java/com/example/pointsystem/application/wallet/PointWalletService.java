@@ -76,7 +76,7 @@ public class PointWalletService {
     @Transactional
     public void cancelEarn(Long memberId, Long earnedPointId) {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found for member " + memberId));
+                .orElseThrow(() -> new IllegalArgumentException("회원의 지갑을 찾을 수 없습니다. 회원 식별자=" + memberId));
 
         wallet.cancelEarn(earnedPointId);
         pointWalletRepository.save(wallet);
@@ -88,10 +88,10 @@ public class PointWalletService {
     @Transactional
     public PointUsage cancelUse(Long memberId, Long usageId, int cancelAmount) {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found for member " + memberId));
+                .orElseThrow(() -> new IllegalArgumentException("회원의 지갑을 찾을 수 없습니다. 회원 식별자=" + memberId));
 
         PointUsage usage = pointUsageRepository.findById(usageId)
-                .orElseThrow(() -> new IllegalArgumentException("Usage not found: " + usageId));
+                .orElseThrow(() -> new IllegalArgumentException("사용 이력을 찾을 수 없습니다. 사용 식별자=" + usageId));
 
         PointUsage canceled = wallet.cancelUse(usage, cancelAmount);
 
@@ -105,10 +105,10 @@ public class PointWalletService {
     @Transactional
     public PointUsage cancelUseAll(Long memberId, Long usageId) {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found for member " + memberId));
+                .orElseThrow(() -> new IllegalArgumentException("회원의 지갑을 찾을 수 없습니다. 회원 식별자=" + memberId));
 
         PointUsage usage = pointUsageRepository.findById(usageId)
-                .orElseThrow(() -> new IllegalArgumentException("Usage not found: " + usageId));
+                .orElseThrow(() -> new IllegalArgumentException("사용 이력을 찾을 수 없습니다. 사용 식별자=" + usageId));
 
         PointUsage canceled = wallet.cancelUseAll(usage);
 

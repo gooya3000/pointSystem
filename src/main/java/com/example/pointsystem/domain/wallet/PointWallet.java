@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.Comparator.comparing;
 
@@ -31,18 +32,18 @@ public class PointWallet {
     public EarnedPoint earn(int amount, LocalDateTime expireAt, EarnedPointSourceType sourceType, PointPolicy policy) {
         // 1) 1회 최대 적립 검증
         if (amount <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than zero.");
+            throw new IllegalArgumentException("적립 금액은 0보다 커야 합니다.");
         }
         if (amount > policy.getMaxEarnPerTxn()) {
             throw new IllegalArgumentException(
-                    "Amount exceeds maximum points per earning transaction.");
+                    "1회 적립 한도를 초과했습니다.");
         }
 
         // 2) 최대 보유 포인트 검증
         int currentBalance = calculateCurrentBalance();
         if (currentBalance + amount > policy.getMaxBalance()) {
             throw new IllegalArgumentException(
-                    "Amount exceeds maximum allowed point balance.");
+                    "최대 보유 가능 포인트를 초과했습니다.");
         }
 
         // 3) EarnedPoint 생성 (여기서 만료일 기본 365일 처리)
@@ -87,7 +88,7 @@ public class PointWallet {
         }
 
         if (remaining > 0) {
-            throw new IllegalStateException("Not enough points");
+            throw new IllegalStateException("사용 가능한 포인트가 부족합니다.");
         }
 
         PointUsage usage = PointUsage.createUse(
@@ -102,16 +103,6 @@ public class PointWallet {
         return usage;
     }
 
-    // 부분 취소
-    public PointUsage cancelUse(long usageId, int cancelAmount) {
-        throw new UnsupportedOperationException("사용 취소를 위해 PointUsage 정보가 필요합니다. cancelUse(PointUsage, int) 를 사용하세요.");
-    }
-
-    // 전체 취소
-    public PointUsage cancelUseAll(long usageId) {
-        throw new UnsupportedOperationException("사용 취소를 위해 PointUsage 정보가 필요합니다. cancelUseAll(PointUsage) 를 사용하세요.");
-    }
-
     public PointUsage cancelUseAll(PointUsage usage) {
         return cancelUse(usage, usage.getUsedAmount());
     }
@@ -124,7 +115,7 @@ public class PointWallet {
      */
     public PointUsage cancelUse(PointUsage usage, int cancelAmount) {
         if (!usage.getMemberId().equals(memberId)) {
-            throw new IllegalArgumentException("Usage does not belong to this wallet");
+            throw new IllegalArgumentException("취소 권한이 없는 사용자입니다.");
         }
 
         int remaining = cancelAmount;
@@ -144,7 +135,7 @@ public class PointWallet {
         }
 
         if (remaining > 0) {
-            throw new IllegalArgumentException("Cancel amount exceeds usage details.");
+            throw new IllegalArgumentException("취소 금액이 사용 금액을 초과했습니다.");
         }
 
         usage.cancel(cancelAmount, restoredDetails);
@@ -153,7 +144,23 @@ public class PointWallet {
 
     // 만료 처리
     public List<EarnedPoint> expire(LocalDateTime now) {
-        throw new UnsupportedOperationException("PointWallet.expire 아직 구현 안 됨");
+        Objects.requireNonNull(now, "현재 시각은 비어 있을 수 없습니다.");
+
+        List<EarnedPoint> expiredPoints = new ArrayList<>();
+        for (EarnedPoint earnedPoint : earnedPoints) {
+            int beforeRemainingAmount = earnedPoint.getRemainingAmount();
+            EarnedPointStatus beforeStatus = earnedPoint.getStatus();
+
+            earnedPoint.expire(now);
+
+            if (beforeRemainingAmount > 0
+                    && beforeStatus == EarnedPointStatus.ACTIVE
+                    && earnedPoint.getStatus() == EarnedPointStatus.EXPIRED) {
+                expiredPoints.add(earnedPoint);
+            }
+        }
+
+        return expiredPoints;
     }
 
     // 지갑 생성
@@ -172,7 +179,7 @@ public class PointWallet {
         return earnedPoints.stream()
                 .filter(ep -> ep.getEarnedPointId().equals(earnedPointId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Earned point not found."));
+                .orElseThrow(() -> new IllegalArgumentException("적립 포인트를 찾을 수 없습니다."));
     }
 
 }

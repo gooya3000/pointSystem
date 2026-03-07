@@ -37,7 +37,7 @@ public class PointUsage {
     public static PointUsage createUse(Long memberId, String orderNo, int amount, List<PointUsageDetail> details) {
         int sum = details.stream().mapToInt(PointUsageDetail::getAmount).sum();
         if (sum != amount) {
-            throw new IllegalArgumentException("Mismatch between usage amount and detail totals.");
+            throw new IllegalArgumentException("사용 금액과 사용 상세 합계가 일치하지 않습니다.");
         }
         return new PointUsage(null, memberId, orderNo, amount, details, LocalDateTime.now());
     }
@@ -57,10 +57,10 @@ public class PointUsage {
      */
     public void cancel(int cancelAmount, List<PointUsageDetail> restoredDetails) {
         if (cancelAmount <= 0) {
-            throw new IllegalArgumentException("Cancel amount must be positive.");
+            throw new IllegalArgumentException("취소 금액은 0보다 커야 합니다.");
         }
         if (cancelAmount > usedAmount) {
-            throw new IllegalArgumentException("Cancel amount exceeds used amount.");
+            throw new IllegalArgumentException("취소 금액이 현재 사용 금액을 초과했습니다.");
         }
 
         this.usedAmount -= cancelAmount;

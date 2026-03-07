@@ -32,7 +32,7 @@ CREATE TABLE point_usage (
 
     CONSTRAINT pk_point_usage PRIMARY KEY (usage_id)
     -- 필요하면 여기서 member_id FK 를 걸 수도 있음
-    -- , CONSTRAINT fk_point_usage_wallet
+    -- CONSTRAINT fk_point_usage_wallet
     -- FOREIGN KEY (member_id) REFERENCES point_wallet (member_id)
 );
 

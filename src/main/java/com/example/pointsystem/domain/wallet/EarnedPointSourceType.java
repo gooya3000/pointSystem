@@ -22,7 +22,7 @@ public enum EarnedPointSourceType {
             return EarnedPointSourceType.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException ex) {
             // 잘못된 값이면 예외 던져서 400으로 처리하게
-            throw new IllegalArgumentException("Invalid sourceType: " + value);
+            throw new IllegalArgumentException("유효하지 않은 포인트 발생 유형입니다: " + value);
         }
     }
 }

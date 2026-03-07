@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * 적립된 포인트의 상태와 금액 흐름을 관리하는 도메인 모델입니다.
@@ -73,7 +73,7 @@ public class EarnedPoint {
     public int use(int amount) {
         // 정상 상태가 아니면 사용할 수 없음
         if (this.status != EarnedPointStatus.ACTIVE) {
-            throw new IllegalStateException("Not usable");
+            throw new IllegalStateException("사용 가능한 상태의 적립 포인트가 아닙니다.");
         }
 
         // 이 적립건에서 실제로 사용할 수 있는 금액 = 요청 vs 남은금액 중 작은 것
@@ -104,8 +104,10 @@ public class EarnedPoint {
      * @param now 현재 LocalDateTime
      */
     public void expire(LocalDateTime now) {
+        Objects.requireNonNull(now, "현재 시각은 비어 있을 수 없습니다.");
+
         // 만료 일시가 현재보다 이전이면서 정상 상태의 포인트는 만료 처리
-        if (expireAt.isBefore(now) && status == EarnedPointStatus.ACTIVE) {
+        if (!expireAt.isAfter(now) && status == EarnedPointStatus.ACTIVE) {
             this.remainingAmount = 0;
             this.status = EarnedPointStatus.EXPIRED;
         }
