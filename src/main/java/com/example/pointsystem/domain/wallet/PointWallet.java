@@ -55,7 +55,9 @@ public class PointWallet {
 
     // 적립 취소
     public EarnedPoint cancelEarn(long earnedPointId) {
-        throw new UnsupportedOperationException("PointWallet.cancelEarn 아직 구현 안 됨");
+        EarnedPoint earnedPoint = findEarnedPoint(earnedPointId);
+        earnedPoint.cancelEarn();
+        return earnedPoint;
     }
 
     /**
@@ -102,12 +104,51 @@ public class PointWallet {
 
     // 부분 취소
     public PointUsage cancelUse(long usageId, int cancelAmount) {
-        throw new UnsupportedOperationException("PointWallet.cancelUse 아직 구현 안 됨");
+        throw new UnsupportedOperationException("사용 취소를 위해 PointUsage 정보가 필요합니다. cancelUse(PointUsage, int) 를 사용하세요.");
     }
 
     // 전체 취소
     public PointUsage cancelUseAll(long usageId) {
-        throw new UnsupportedOperationException("PointWallet.cancelUseAll 아직 구현 안 됨");
+        throw new UnsupportedOperationException("사용 취소를 위해 PointUsage 정보가 필요합니다. cancelUseAll(PointUsage) 를 사용하세요.");
+    }
+
+    public PointUsage cancelUseAll(PointUsage usage) {
+        return cancelUse(usage, usage.getUsedAmount());
+    }
+
+    /**
+     * 사용을 부분/전체 취소합니다.
+     * @param usage 취소 대상 사용 내역
+     * @param cancelAmount 취소 금액
+     * @return 취소 후 사용 내역
+     */
+    public PointUsage cancelUse(PointUsage usage, int cancelAmount) {
+        if (!usage.getMemberId().equals(memberId)) {
+            throw new IllegalArgumentException("Usage does not belong to this wallet");
+        }
+
+        int remaining = cancelAmount;
+        List<PointUsageDetail> restoredDetails = new ArrayList<>();
+
+        for (PointUsageDetail detail : usage.getDetails()) {
+            if (remaining == 0) break;
+
+            EarnedPoint earnedPoint = findEarnedPoint(detail.getEarnedPointId());
+            int canceled = detail.cancelUsage(remaining);
+
+            if (canceled > 0) {
+                earnedPoint.restore(canceled);
+                restoredDetails.add(PointUsageDetail.of(earnedPoint.getEarnedPointId(), canceled));
+                remaining -= canceled;
+            }
+        }
+
+        if (remaining > 0) {
+            throw new IllegalArgumentException("Cancel amount exceeds usage details.");
+        }
+
+        usage.cancel(cancelAmount, restoredDetails);
+        return usage;
     }
 
     // 만료 처리
@@ -125,6 +166,13 @@ public class PointWallet {
         return earnedPoints.stream()
                 .mapToInt(EarnedPoint::getRemainingAmount)
                 .sum();
+    }
+
+    private EarnedPoint findEarnedPoint(Long earnedPointId) {
+        return earnedPoints.stream()
+                .filter(ep -> ep.getEarnedPointId().equals(earnedPointId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Earned point not found."));
     }
 
 }

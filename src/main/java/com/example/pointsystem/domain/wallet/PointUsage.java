@@ -49,4 +49,26 @@ public class PointUsage {
     public List<PointUsageEvent> getEvents() {
         return Collections.unmodifiableList(events);
     }
+
+    /**
+     * 사용 취소 시 금액과 상세 내역을 반영합니다.
+     * @param cancelAmount 취소 금액
+     * @param restoredDetails 환불된 적립 포인트 상세 내역
+     */
+    public void cancel(int cancelAmount, List<PointUsageDetail> restoredDetails) {
+        if (cancelAmount <= 0) {
+            throw new IllegalArgumentException("Cancel amount must be positive.");
+        }
+        if (cancelAmount > usedAmount) {
+            throw new IllegalArgumentException("Cancel amount exceeds used amount.");
+        }
+
+        this.usedAmount -= cancelAmount;
+
+        if (this.usedAmount == 0) {
+            addEvent(PointUsageEvent.useCanceled(cancelAmount, restoredDetails));
+        } else {
+            addEvent(PointUsageEvent.usePartiallyCanceled(cancelAmount, restoredDetails));
+        }
+    }
 }

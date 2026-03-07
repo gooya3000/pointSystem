@@ -42,6 +42,8 @@ public class PointUsageMapper {
                 usage.getCreatedAt()
         );
 
+        entity.setId(usage.getUsageId());
+
         if (usage.getDetails() != null) {
             usage.getDetails().forEach(detail -> {
                 PointUsageDetailEntity detailEntity =
