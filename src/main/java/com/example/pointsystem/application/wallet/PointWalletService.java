@@ -3,6 +3,7 @@ package com.example.pointsystem.application.wallet;
 import com.example.pointsystem.application.policy.PointPolicyService;
 import com.example.pointsystem.domain.policy.PointPolicy;
 import com.example.pointsystem.domain.wallet.*;
+import com.example.pointsystem.infrastructure.redis.MemberPointLock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +29,8 @@ public class PointWalletService {
      * @param sourceType 적립 포인트 발생 유형
      */
     @Transactional
+    @MemberPointLock(key = "#p0")
     public void earnPoint(Long memberId, int amount, LocalDateTime expireAt, String sourceType) {
-
         // 1회 적립 한도, 최대 보유 한도 정책 가져오기
         PointPolicy policy = pointPolicyService.getCurrentPolicy();
 
@@ -60,6 +61,7 @@ public class PointWalletService {
      * @return PointUsage
      */
     @Transactional
+    @MemberPointLock(key = "#p0")
     public PointUsage usePoint(Long memberId, int amount, String orderNo) {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
                 .orElseGet(() -> PointWallet.createWallet(memberId));
@@ -74,6 +76,7 @@ public class PointWalletService {
      * 적립을 취소합니다.
      */
     @Transactional
+    @MemberPointLock(key = "#p0")
     public void cancelEarn(Long memberId, Long earnedPointId) {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원의 지갑을 찾을 수 없습니다. 회원 식별자=" + memberId));
@@ -86,6 +89,7 @@ public class PointWalletService {
      * 포인트 사용을 부분 취소합니다.
      */
     @Transactional
+    @MemberPointLock(key = "#p0")
     public PointUsage cancelUse(Long memberId, Long usageId, int cancelAmount) {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원의 지갑을 찾을 수 없습니다. 회원 식별자=" + memberId));
@@ -103,6 +107,7 @@ public class PointWalletService {
      * 포인트 사용을 전액 취소합니다.
      */
     @Transactional
+    @MemberPointLock(key = "#p0")
     public PointUsage cancelUseAll(Long memberId, Long usageId) {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원의 지갑을 찾을 수 없습니다. 회원 식별자=" + memberId));
@@ -115,7 +120,5 @@ public class PointWalletService {
         pointWalletRepository.save(wallet);
         return pointUsageRepository.save(canceled);
     }
-
-
 
 }
