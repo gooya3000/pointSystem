@@ -40,18 +40,21 @@ public class MemberPointLockManager {
         try {
             locked = lock.tryLock(WAIT_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
+            // InterruptedException은 스레드가 어떤 작업을 기다리고 있을 때 다른 스레드가 "그만 기다려!"라고 interrupt()를 호출하면 발생하는 예외
+            // 예시: 서버 종료, 요청 취소, ThreadPool 종료, Future.cancel()
+            // Java는 InterruptedException이 발생하면 인터럽트 상태를 자동으로 지워버리기 때문에 인터럽트 상태를 다시 true로 복구
             Thread.currentThread().interrupt();
             throw new IllegalStateException("락 대기 중 인터럽트가 발생했습니다.", e);
         }
 
-        if (!locked) {
+        if (!locked) { //타임아웃 시 락 획득 실패
             throw new IllegalStateException("요청이 많아 잠시 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.");
         }
 
         try {
             return action.get();
         } finally {
-            if (lock.isHeldByCurrentThread()) {
+            if (lock.isHeldByCurrentThread()) { // 현재 스레드가 락을 가지고 있을 때만 unlock
                 lock.unlock();
             }
         }
