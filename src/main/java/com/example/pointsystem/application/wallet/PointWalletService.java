@@ -4,7 +4,10 @@ import com.example.pointsystem.application.policy.PointPolicyService;
 import com.example.pointsystem.domain.policy.PointPolicy;
 import com.example.pointsystem.domain.wallet.*;
 import com.example.pointsystem.infrastructure.redis.MemberPointLock;
+import com.example.pointsystem.infrastructure.redis.RedisCacheConfig;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +33,7 @@ public class PointWalletService {
      */
     @Transactional
     @MemberPointLock(key = "#p0")
+    @CacheEvict(cacheNames = RedisCacheConfig.POINT_WALLET_CACHE, key = "#memberId")
     public void earnPoint(Long memberId, int amount, LocalDateTime expireAt, String sourceType) {
         // 1회 적립 한도, 최대 보유 한도 정책 가져오기
         PointPolicy policy = pointPolicyService.getCurrentPolicy();
@@ -48,6 +52,7 @@ public class PointWalletService {
      * @return PointWallet
      */
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = RedisCacheConfig.POINT_WALLET_CACHE, key = "#memberId")
     public PointWallet getWallet(Long memberId) {
         return pointWalletRepository.findByMemberId(memberId)
                 .orElseGet(() -> PointWallet.createWallet(memberId));
@@ -62,6 +67,7 @@ public class PointWalletService {
      */
     @Transactional
     @MemberPointLock(key = "#p0")
+    @CacheEvict(cacheNames = RedisCacheConfig.POINT_WALLET_CACHE, key = "#memberId")
     public PointUsage usePoint(Long memberId, int amount, String orderNo) {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
                 .orElseGet(() -> PointWallet.createWallet(memberId));
@@ -77,6 +83,7 @@ public class PointWalletService {
      */
     @Transactional
     @MemberPointLock(key = "#p0")
+    @CacheEvict(cacheNames = RedisCacheConfig.POINT_WALLET_CACHE, key = "#memberId")
     public void cancelEarn(Long memberId, Long earnedPointId) {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원의 지갑을 찾을 수 없습니다. 회원 식별자=" + memberId));
@@ -90,6 +97,7 @@ public class PointWalletService {
      */
     @Transactional
     @MemberPointLock(key = "#p0")
+    @CacheEvict(cacheNames = RedisCacheConfig.POINT_WALLET_CACHE, key = "#memberId")
     public PointUsage cancelUse(Long memberId, Long usageId, int cancelAmount) {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원의 지갑을 찾을 수 없습니다. 회원 식별자=" + memberId));
@@ -108,6 +116,7 @@ public class PointWalletService {
      */
     @Transactional
     @MemberPointLock(key = "#p0")
+    @CacheEvict(cacheNames = RedisCacheConfig.POINT_WALLET_CACHE, key = "#memberId")
     public PointUsage cancelUseAll(Long memberId, Long usageId) {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원의 지갑을 찾을 수 없습니다. 회원 식별자=" + memberId));
