@@ -4,6 +4,7 @@ import com.example.pointsystem.application.policy.PointPolicyService;
 import com.example.pointsystem.domain.policy.PointPolicy;
 import com.example.pointsystem.domain.wallet.*;
 import com.example.pointsystem.infrastructure.redis.MemberPointLock;
+import com.example.pointsystem.infrastructure.redis.PointUseIdempotencyManager;
 import com.example.pointsystem.infrastructure.redis.RedisCacheConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * 회원 포인트 지갑의 적립, 사용, 조회 기능을 제공하는 응용 서비스입니다.
@@ -23,6 +25,7 @@ public class PointWalletService {
     private final PointWalletRepository pointWalletRepository;
     private final PointUsageRepository pointUsageRepository;
     private final PointPolicyService pointPolicyService;
+    private final PointUseIdempotencyManager pointUseIdempotencyManager;
 
     /**
      * 포인트를 적립합니다.
@@ -69,13 +72,24 @@ public class PointWalletService {
     @MemberPointLock(key = "#p0")
     @CacheEvict(cacheNames = RedisCacheConfig.POINT_WALLET_CACHE, key = "#memberId")
     public PointUsage usePoint(Long memberId, int amount, String orderNo) {
+        Optional<Long> existingUsageId = pointUseIdempotencyManager.findUsageId(memberId, orderNo);
+        if (existingUsageId.isPresent()) {
+            Optional<PointUsage> existingUsage = pointUsageRepository.findById(existingUsageId.get());
+            if (existingUsage.isPresent()) {
+                return existingUsage.get();
+            }
+            pointUseIdempotencyManager.clear(memberId, orderNo);
+        }
+
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
                 .orElseGet(() -> PointWallet.createWallet(memberId));
 
         PointUsage usage = wallet.use(amount, orderNo); // 도메인 호출
 
         pointWalletRepository.save(wallet);
-        return pointUsageRepository.save(usage);
+        PointUsage savedUsage = pointUsageRepository.save(usage);
+        pointUseIdempotencyManager.saveUsageId(memberId, orderNo, savedUsage.getUsageId());
+        return savedUsage;
     }
 
     /**
