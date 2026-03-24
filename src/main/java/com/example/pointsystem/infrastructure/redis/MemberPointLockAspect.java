@@ -5,6 +5,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.Ordered;
@@ -13,6 +14,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Component;
+import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -31,9 +33,17 @@ public class MemberPointLockAspect {
 
     private final MemberPointLockManager memberPointLockManager;
 
-    @Around("@annotation(memberPointLock)")
-    public Object lock(ProceedingJoinPoint joinPoint, MemberPointLock memberPointLock) throws Throwable {
-        Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
+    @Around("@annotation(com.example.pointsystem.infrastructure.redis.MemberPointLock)")
+    public Object lock(ProceedingJoinPoint joinPoint) throws Throwable {
+        Method interfaceMethod = ((MethodSignature) joinPoint.getSignature()).getMethod();
+        Method method = AopUtils.getMostSpecificMethod(interfaceMethod, joinPoint.getTarget().getClass());
+        MemberPointLock memberPointLock = AnnotationUtils.findAnnotation(method, MemberPointLock.class);
+        // @annotation 포인트컷으로 진입하더라도 프록시/브리지 메서드 차이로
+        // 실제 타겟 메서드에서 어노테이션 조회가 실패할 수 있어 방어적으로 검사한다.
+        if (memberPointLock == null) {
+            throw new IllegalStateException("@MemberPointLock 어노테이션을 찾을 수 없습니다.");
+        }
+
         MethodBasedEvaluationContext context = new MethodBasedEvaluationContext(
                 joinPoint.getTarget(),
                 method,

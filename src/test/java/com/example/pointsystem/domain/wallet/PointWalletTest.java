@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class PointWalletTest {
 
     @Test
+    // 의도: 만료 시점이 지난 ACTIVE 적립건만 EXPIRED로 전환되고 반환되는지 확인한다.
     void expire_marks_active_points_and_returns_expired_points() {
         LocalDateTime now = LocalDateTime.now();
 
@@ -46,6 +47,7 @@ class PointWalletTest {
     }
 
     @Test
+    // 의도: 만료 경계값(now == expireAt)에서도 만료 처리되는지 검증한다.
     void expire_works_when_expire_at_equals_now() {
         LocalDateTime now = LocalDateTime.now();
         EarnedPoint boundary = new EarnedPoint(
@@ -67,6 +69,7 @@ class PointWalletTest {
     }
 
     @Test
+    // 의도: 만료 처리 입력값 null은 즉시 예외로 차단한다.
     void expire_throws_when_now_is_null() {
         PointWallet wallet = PointWallet.createWallet(30L);
         assertThrows(NullPointerException.class, () -> wallet.expire(null));

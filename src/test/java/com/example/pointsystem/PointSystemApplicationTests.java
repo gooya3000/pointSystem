@@ -15,6 +15,7 @@ class PointSystemApplicationTests {
     private RedissonClient redissonClient;
 
     @Test
+    // 의도: 기본 스프링 컨텍스트가 정상 부팅되는지 확인한다.
     void contextLoads() {
     }
 
