@@ -1,5 +1,6 @@
 package com.example.pointsystem.application.wallet;
 
+import com.example.pointsystem.application.event.PointChangedEvent;
 import com.example.pointsystem.application.policy.PointPolicyService;
 import com.example.pointsystem.domain.wallet.*;
 import com.example.pointsystem.infrastructure.redis.PointUseIdempotencyManager;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,6 +33,8 @@ class PointWalletServiceTest {
     private PointPolicyService pointPolicyService;
     @Mock
     private PointUseIdempotencyManager pointUseIdempotencyManager;
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     private PointWalletService service;
 
@@ -40,7 +44,8 @@ class PointWalletServiceTest {
                 pointWalletRepository,
                 pointUsageRepository,
                 pointPolicyService,
-                pointUseIdempotencyManager
+                pointUseIdempotencyManager,
+                applicationEventPublisher
         );
     }
 
@@ -66,6 +71,7 @@ class PointWalletServiceTest {
         verify(pointWalletRepository, never()).save(any());
         verify(pointUsageRepository, never()).save(any());
         verify(pointUseIdempotencyManager, never()).saveUsageId(any(), any(), any());
+        verify(applicationEventPublisher, never()).publishEvent(any(PointChangedEvent.class));
     }
 
     @Test
@@ -94,6 +100,7 @@ class PointWalletServiceTest {
         verify(pointUseIdempotencyManager).clear(1L, "ORDER-2");
         verify(pointWalletRepository).save(any(PointWallet.class));
         verify(pointUseIdempotencyManager).saveUsageId(1L, "ORDER-2", 20L);
+        verify(applicationEventPublisher).publishEvent(any(PointChangedEvent.class));
     }
 
     private PointWallet walletWithBalance(Long memberId, int amount) {

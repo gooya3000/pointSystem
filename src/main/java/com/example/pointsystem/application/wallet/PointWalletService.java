@@ -1,5 +1,7 @@
 package com.example.pointsystem.application.wallet;
 
+import com.example.pointsystem.application.event.PointChangedEvent;
+import com.example.pointsystem.application.event.PointEventType;
 import com.example.pointsystem.application.policy.PointPolicyService;
 import com.example.pointsystem.domain.policy.PointPolicy;
 import com.example.pointsystem.domain.wallet.*;
@@ -9,6 +11,7 @@ import com.example.pointsystem.infrastructure.redis.RedisCacheConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,7 @@ public class PointWalletService {
     private final PointUsageRepository pointUsageRepository;
     private final PointPolicyService pointPolicyService;
     private final PointUseIdempotencyManager pointUseIdempotencyManager;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * 포인트를 적립합니다.
@@ -47,6 +51,14 @@ public class PointWalletService {
         wallet.earn(amount, expireAt, EarnedPointSourceType.fromNullable(sourceType), policy);
 
         pointWalletRepository.save(wallet);
+        applicationEventPublisher.publishEvent(PointChangedEvent.of(
+                PointEventType.EARN,
+                memberId,
+                null,
+                null,
+                amount,
+                null
+        ));
     }
 
     /**
@@ -89,6 +101,14 @@ public class PointWalletService {
         pointWalletRepository.save(wallet);
         PointUsage savedUsage = pointUsageRepository.save(usage);
         pointUseIdempotencyManager.saveUsageId(memberId, orderNo, savedUsage.getUsageId());
+        applicationEventPublisher.publishEvent(PointChangedEvent.of(
+                PointEventType.USE,
+                memberId,
+                savedUsage.getUsageId(),
+                null,
+                savedUsage.getUsedAmount(),
+                savedUsage.getOrderNo()
+        ));
         return savedUsage;
     }
 
@@ -102,8 +122,16 @@ public class PointWalletService {
         PointWallet wallet = pointWalletRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원의 지갑을 찾을 수 없습니다. 회원 식별자=" + memberId));
 
-        wallet.cancelEarn(earnedPointId);
+        EarnedPoint canceled = wallet.cancelEarn(earnedPointId);
         pointWalletRepository.save(wallet);
+        applicationEventPublisher.publishEvent(PointChangedEvent.of(
+                PointEventType.EARN_CANCEL,
+                memberId,
+                null,
+                earnedPointId,
+                canceled.getAmount(),
+                null
+        ));
     }
 
     /**
@@ -122,7 +150,16 @@ public class PointWalletService {
         PointUsage canceled = wallet.cancelUse(usage, cancelAmount);
 
         pointWalletRepository.save(wallet);
-        return pointUsageRepository.save(canceled);
+        PointUsage savedUsage = pointUsageRepository.save(canceled);
+        applicationEventPublisher.publishEvent(PointChangedEvent.of(
+                PointEventType.USE_CANCEL_PARTIAL,
+                memberId,
+                savedUsage.getUsageId(),
+                null,
+                cancelAmount,
+                savedUsage.getOrderNo()
+        ));
+        return savedUsage;
     }
 
     /**
@@ -138,10 +175,20 @@ public class PointWalletService {
         PointUsage usage = pointUsageRepository.findById(usageId)
                 .orElseThrow(() -> new IllegalArgumentException("사용 이력을 찾을 수 없습니다. 사용 식별자=" + usageId));
 
+        int cancelAmount = usage.getUsedAmount();
         PointUsage canceled = wallet.cancelUseAll(usage);
 
         pointWalletRepository.save(wallet);
-        return pointUsageRepository.save(canceled);
+        PointUsage savedUsage = pointUsageRepository.save(canceled);
+        applicationEventPublisher.publishEvent(PointChangedEvent.of(
+                PointEventType.USE_CANCEL_ALL,
+                memberId,
+                savedUsage.getUsageId(),
+                null,
+                cancelAmount,
+                savedUsage.getOrderNo()
+        ));
+        return savedUsage;
     }
 
 }

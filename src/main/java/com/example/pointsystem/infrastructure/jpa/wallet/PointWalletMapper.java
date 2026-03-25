@@ -4,6 +4,7 @@ import com.example.pointsystem.domain.wallet.EarnedPoint;
 import com.example.pointsystem.domain.wallet.PointWallet;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +65,7 @@ public class PointWalletMapper {
      * EarnedPoint (도메인) -> EarnedPointEntity 로 변환합니다.
      */
     private EarnedPointEntity toEntity(EarnedPoint ep, PointWalletEntity walletEntity) {
+        LocalDateTime updatedAt = ep.getCreatedAt() != null ? ep.getCreatedAt() : LocalDateTime.now();
 
         return new EarnedPointEntity(
                 ep.getEarnedPointId(),
@@ -74,7 +76,7 @@ public class PointWalletMapper {
                 ep.getSourceType(),
                 ep.getStatus(),
                 ep.getCreatedAt(),
-                null
+                updatedAt
         );
     }
 
